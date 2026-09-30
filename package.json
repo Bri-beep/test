@@ -51,8 +51,8 @@
     "app": "node scripts/app.mjs"
   },
   "dependencies": {
-    "@databricks/appkit": "0.76.1",
-    "@databricks/appkit-ui": "0.76.1",
+    "@databricks/appkit": "0.78.0",
+    "@databricks/appkit-ui": "0.78.0",
     "@databricks/sql": "2.0.0",
     "@fontsource-variable/outfit": "5.3.0",
     "d3-geo": "3.1.1",
