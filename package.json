@@ -75,7 +75,7 @@
     "@types/d3-geo": "3.1.1",
     "@types/express": "4.17.25",
     "@types/geojson": "7946.0.16",
-    "@types/node": "22.20.1",
+    "@types/node": "26.6.3",
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "@types/topojson-client": "3.1.5",
