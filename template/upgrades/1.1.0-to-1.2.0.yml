@@ -1,0 +1,81 @@
+schemaVersion: 1
+id: 1.1.0-to-1.2.0
+from: 1.1.0
+to: 1.2.0
+summary: Ajoute les reprises historiques bornées et la revue automatique des versions et de la documentation.
+changes:
+  - id: cost-aware-data-history-skill
+    mode: guided
+    title: Choisir une historisation adaptée au coût et à la rétention
+    description: Le nouveau skill distingue lecture directe, remplacement borné et data product hot/cold.
+    paths:
+      - .agents/skills/design-cost-aware-data-history/SKILL.md
+      - .agents/skills/design-cost-aware-data-history/references/patterns.md
+      - .agents/skills/create-analytics-dbx-app/SKILL.md
+      - .agents/skills/create-analytics-dbx-app/references/data-preparation.md
+      - README.md
+      - docs/architecture.md
+      - docs/databricks.md
+      - docs/deployment.md
+      - docs/local-development.md
+    instructions:
+      - Copier le skill et son routage sans importer de table, KPI ou identité provenant d'un projet de référence.
+      - Confirmer le grain, la colonne DATE, les rétentions, le jour finalisé et la fenêtre maximale avant toute écriture.
+  - id: bounded-data-replay
+    mode: guided
+    title: Ajouter le contrat notebook bounded-replace et la commande data:replay
+    description: Une plage explicite est matérialisée, validée puis remplacée atomiquement sans redéployer le bundle.
+    paths:
+      - package.json
+      - scripts/data-preparation.mjs
+      - scripts/init-data.mjs
+      - scripts/preview-real.mjs
+      - scripts/run-data-preparation.mjs
+      - scripts/validate-bundle-cli.ts
+      - tests/data-preparation.test.ts
+      - tests/preview-real.test.ts
+    instructions:
+      - Reprendre le schéma de contrat, le SQL généré, les bornes de dates, le timeout et max_concurrent_runs sans écraser les contrats data existants.
+      - Garder les dates obligatoires, le plan sans mutation et le refus de preview globale pour les contrats bornés.
+      - Conserver le fingerprint du contrat et du SQL afin qu'un replay local refuse un Job déployé depuis une autre révision.
+      - Vérifier le type DATE, le pruning source et les contrôles métier avant le premier run Databricks.
+  - id: automatic-feature-release-review
+    mode: guided
+    title: Automatiser la décision de version et la revue documentaire après une feature
+    description: Les instructions d'agent et la CI refusent une évolution du template sans release et documentation cohérentes.
+    paths:
+      - AGENTS.md
+      - .agents/skills/prepare-template-release/SKILL.md
+      - .agents/skills/create-analytics-dbx-app/references/delivery.md
+      - .agents/skills/review-analytics-app-docs/SKILL.md
+      - scripts/check-template-release.mjs
+      - tests/template-release.test.ts
+      - .github/workflows/ci.yml
+    instructions:
+      - Conserver l'invocation implicite des skills et la règle de fin de feature dans AGENTS.md.
+      - Ajouter template:release:check aux validations, mais laisser la commande ignorer le bump dans une app initialisée.
+      - Fournir le SHA de base à la CI avec un historique Git complet.
+  - id: template-version-1-2
+    mode: guided
+    title: Déclarer l'état du template 1.2.0
+    description: Le manifeste, init-app, le parcours consommateur et les guides ciblent les mêmes capabilities.
+    paths:
+      - template/manifest.yml
+      - template/upgrades/1.1.0-to-1.2.0.yml
+      - scripts/template-status.mjs
+      - scripts/validate-template-journey.ts
+      - tests/template-version.test.ts
+      - tests/init-app.test.ts
+      - README.md
+      - docs/template-upgrades.md
+    instructions:
+      - Exécuter npm run template:check -- --to 1.2.0 avant de modifier l'état d'une app existante.
+      - Passer ensuite .valiuz-template.yml à 1.2.0 avec les deux nouvelles capabilities.
+      - Ajouter 1.1.0-to-1.2.0 à appliedUpgrades dans une app mise à niveau ; une nouvelle app garde appliedUpgrades vide.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 1.2.0
+  - npm run template:release:check -- --base origin/main
+  - npm run data:prepare:check
+  - npm run app:doctor
+  - npm run check

@@ -1,0 +1,163 @@
+schemaVersion: 1
+id: 1.5.0-to-2.0.0
+from: 1.5.0
+to: 2.0.0
+summary: Migration volontaire du runtime Next.js vers AppKit, Vite et React Router.
+changes:
+  - id: appkit-runtime
+    mode: guided
+    title: Porter le runtime et les routes
+    description: Le navigateur charge uniquement la configuration publique et appelle les APIs des features.
+    paths:
+      - package.json
+      - package-lock.json
+      - vite.config.ts
+      - index.html
+      - tsconfig.json
+      - eslint.config.mjs
+      - src/client
+      - src/server
+      - src/shared
+      - src/lib/http
+      - src/lib/errors
+      - src/lib/logging
+      - src/components/app-shell
+      - scripts/build-server.mjs
+      - playwright.config.ts
+    instructions:
+      - Suivre docs/migration-2.0.md dans une branche dédiée.
+      - Depuis le checkout 2.0 relu, lancer npm run app -- migrate --app-dir <ancienne-app> pour inventorier les changements sans modifier l’app.
+      - Fusionner les dépendances et régénérer le lockfile avec npm.
+      - Porter chaque page et enregistrer explicitement ses routes client et serveur.
+      - Déplacer les chargements serveur derrière une API de feature utilisant withApiRoute.
+      - Conserver les URL, styles, médias et paramètres de support propres à l’application.
+      - Retirer les fichiers Next.js après avoir porté tous leurs comportements.
+  - id: capability-adapters
+    mode: guided
+    title: Préserver les contrats de données et les capacités optionnelles
+    description: Les calculs métier sont conservés ; les repositories passent aux paramètres nommés et les routes à Express natif.
+    paths:
+      - src/lib/databricks
+      - src/features/genie
+      - src/server/genie-plugin.ts
+      - src/features/user-state/server/runtime.ts
+      - src/features/user-state/server/request.ts
+      - src/features/user-state/server/route.ts
+      - src/features/user-state/server/queries.ts
+      - src/features/user-state/server/repository.ts
+      - src/features/readiness/server/queries.ts
+      - src/features/readiness/server/repository.ts
+      - scripts/new-feature.mjs
+      - scripts/data-access.mjs
+      - config/appkit-resources.generated.json
+      - tests
+      - e2e
+    instructions:
+      - Conserver les requêtes métier, sources, alias Genie et tables personnelles.
+      - Porter uniquement les marqueurs SQL et leurs bindings vers des paramètres nommés ; aucune traduction positionnelle ne reste au runtime.
+      - Enregistrer les handlers withApiRoute directement dans Express ; utiliser request.params, request.query, request.body validé et context.signal.
+      - Supprimer expressRoute et les retours Web Response ; attendre les écritures SSE dans la réponse Express.
+      - Utiliser transport driver pour préserver les cellules STRING ressemblant à du JSON.
+      - Porter le service vers Genie.sendMessage avec le plugin privé, le client de compatibilité par requête et la route de session ; suivre docs/genie.md.
+      - Porter les clients SSE personnalisés vers les champs et l’ordre AppKit ; connectSSE doit interdire les reprises de POST.
+      - Générer les métadonnées avec npm run data:access:render et examiner les droits.
+      - Tester les parcours, les limites, les identités et la soumission sans rejeu.
+  - id: upstream-maintenance
+    mode: guided
+    title: Adopter la maintenance amont et déclarer la version
+    description: Les versions testées et les exceptions sont explicites ; les mises à jour demandent une revue humaine.
+    paths:
+      - config/appkit-compatibility.json
+      - config/appkit-capabilities.json
+      - docs/genie.md
+      - scripts/app-capabilities.mjs
+      - scripts/app-skills.mjs
+      - scripts/app-orchestrate.mjs
+      - scripts/app.mjs
+      - scripts/app-migrate.mjs
+      - scripts/init-app.mjs
+      - scripts/app-guide.mjs
+      - scripts/app-spec.mjs
+      - scripts/appkit-compatibility.mjs
+      - scripts/app-doctor.mjs
+      - scripts/check-upstream.mjs
+      - scripts/validate-v2-migration.ts
+      - scripts/validate-template-journey.ts
+      - scripts/validate-bundle-cli.ts
+      - scripts/template-manifest.mjs
+      - .github/dependabot.yml
+      - .github/workflows/upstream-check.yml
+      - .github/workflows/ci.yml
+      - .agents/skills
+      - template/manifest.yml
+      - README.md
+      - AGENTS.md
+      - docs
+    instructions:
+      - Installer les skills amont hors du repository avec le CLI Databricks.
+      - Conserver les features et le cadrage ; ajouter les capacités envisagées dans la spec puis régénérer le brief avec app:guide --non-interactive.
+      - Consulter app:capabilities et app:skills ; les choix de cadrage ne montent aucun plugin.
+      - Ajouter app:orchestrate dans package.json et reprendre avec le skill de création, sans rejouer init-app.
+      - Ajouter le script npm app avec node scripts/app.mjs ; conserver les anciennes commandes et suivre docs/cli-workflow.md.
+      - Fusionner le parcours analytics-workflow.md du skill ; utiliser app prompt --idea pour couvrir besoin, données, KPI, préparation, interface, tests et livraison avec une personne.
+      - Conserver les anciens --role comme priorités facultatives ; le champ workflow de app next expose des revues et déclarations, pas une certification.
+      - Conserver le refus de réinitialiser une app nommée ou suivie ; init-app ne sert pas à changer sa version.
+      - Conserver les notes de reprise existantes ; leur présence ne prouve ni test réussi ni autorisation.
+      - Fusionner les workflows et conserver leur revue humaine.
+      - Valider les capabilities 2.0.0 avant de modifier .valiuz-template.yml.
+      - Ajouter appkit-native-runtime, upstream-compatibility, guided-appkit-capabilities, period-comparison, appkit-genie-integration et comparison-sharing puis déclarer 1.5.0-to-2.0.0 dans appliedUpgrades.
+      - Obtenir une autorisation explicite pour le déploiement de développement et sa recette distante.
+  - id: optional-period-comparison
+    mode: guided
+    title: Rendre disponible la comparaison facultative
+    description: Les KPI existants restent inchangés ; chaque feature choisit ses périodes et sa décomposition.
+    paths:
+      - src/features/period-comparison
+      - src/components/charts/waterfall-chart.tsx
+      - src/components/charts/waterfall-model.ts
+      - src/components/charts/time-series-chart.tsx
+      - src/components/data-visualization/index.ts
+      - scripts/feature-comparison-template.mjs
+      - docs/period-comparison.md
+    instructions:
+      - Fusionner les composants et contrats sans modifier les requêtes métier ni les tables personnelles existantes.
+      - Fusionner les exports et la largeur automatique de l’axe numérique dans les composants personnalisés.
+      - Conserver les features sans comparison ; app:guide doit préserver leurs définitions.
+      - Utiliser --date-column pour une nouvelle feature pertinente ; --breakdown-column ajoute un waterfall uniquement sur count/sum.
+      - Pour un KPI existant, adapter son repository et sa route suivant docs/period-comparison.md ; ne pas rejouer le générateur sur le même slug.
+      - Confirmer DATE, fuseau, grain, couverture et additivité ; ne pas attribuer de causalité aux contributions.
+      - Ajouter la prop genie seulement pour un Space compatible ; la question joint les périodes, filtres et réserves, sans envoi automatique.
+      - Garder les résultats et sélections hors des tables d’état personnel tant qu’aucun contrat de définition n’est ajouté.
+  - id: optional-comparison-sharing
+    mode: guided
+    title: Rendre disponible le partage facultatif des comparaisons
+    description: Le lien restaure une définition et recalcule les données ; la synthèse conserve les chiffres consultés et leurs réserves.
+    paths:
+      - src/features/period-comparison
+      - tailwind.config.ts
+      - scripts/new-feature.mjs
+      - scripts/feature-comparison-template.mjs
+      - scripts/app-spec.mjs
+      - scripts/app.mjs
+      - tests/comparison-sharing.test.ts
+      - e2e/comparison-sharing.spec.ts
+      - docs/period-comparison.md
+      - .agents/skills/create-analytics-dbx-app/references/sharing.md
+    instructions:
+      - Fusionner les contrats et composants de partage ; conserver la prop sharing absente sur les vues qui n'en ont pas besoin.
+      - Ajouter ./node_modules/@databricks/appkit-ui/dist/react/ui/dialog.js au tableau content de tailwind.config.ts pour générer les classes du fond modal.
+      - Conserver les entrées content, le thème et les plugins personnalisés ; ne pas remplacer la configuration Tailwind de l'app.
+      - Pour une nouvelle comparaison, --share-analysis exige --date-column ; le générateur consigne ce choix dans la spec et le brief.
+      - Pour une vue existante, ajouter sharing avec une clé stable après revue de sa définition et de ses filtres.
+      - Autoriser les segments seulement après revue de leurs valeurs ; --share-segment exige --share-analysis et --breakdown-column.
+      - Conserver le refus des liens invalides, des champs inconnus et des segments non autorisés ; ne jamais retirer silencieusement un filtre.
+      - Tester la reprise sur dates fixes, les accès habituels, les réserves de la synthèse et la copie manuelle.
+      - Ne pas stocker de résultat ni partager de conversation Genie ou d'identifiant d'analyse personnelle dans le lien.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 2.0.0
+  - npm run template:release:check -- --base origin/main
+  - npm run app:doctor
+  - npm run check
+  - npm run test:e2e
+  - npm run bundle:compatibility

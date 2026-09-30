@@ -1,0 +1,47 @@
+bundle:
+  name: "__APP_NAME__"
+  databricks_cli_version: ">= 0.295.0"
+
+include:
+  - resources/*.yml
+
+variables:
+  app_name:
+    default: "__APP_NAME__"
+  app_description:
+    default: "__APP_DESCRIPTION__"
+  sql_warehouse_id:
+    default: ab362e9710498a08
+  git_repo_url:
+    default: "__GIT_REPOSITORY_URL__"
+  git_commit:
+    description: Exact Git commit deployed by the production workflow
+    default: "0000000000000000000000000000000000000000"
+  can_use_group:
+    default: "__CAN_USE_GROUP__"
+  can_manage_group:
+    default: "__CAN_MANAGE_GROUP__"
+  prod_root_path:
+    default: "__DATABRICKS_PROD_ROOT_PATH__"
+
+targets:
+  dev:
+    default: true
+    mode: development
+    resources:
+      apps:
+        app:
+          source_code_path: .
+  prod:
+    mode: production
+    workspace:
+      host: https://3070470996474403.3.gcp.databricks.com
+      root_path: ${var.prod_root_path}
+    resources:
+      apps:
+        app:
+          git_repository:
+            provider: gitHub
+            url: ${var.git_repo_url}
+          git_source:
+            commit: ${var.git_commit}

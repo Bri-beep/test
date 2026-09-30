@@ -1,0 +1,10 @@
+version: 1
+app:
+  name: __PACKAGE_NAME__
+  type: dashboard
+  audience: À confirmer
+  decision: À confirmer
+  success: À confirmer
+capabilities:
+  - analytics
+features: []

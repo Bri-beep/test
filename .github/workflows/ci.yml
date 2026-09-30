@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      template_source: ${{ steps.template-kind.outputs.source }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Identify template source
+        id: template-kind
+        run: node --input-type=module -e 'import fs from "node:fs"; console.log("source=" + (JSON.parse(fs.readFileSync("package.json", "utf8")).name === "__PACKAGE_NAME__"))' >> "$GITHUB_OUTPUT"
+      - name: Validate template, guided app and data configuration
+        run: npm run template:check && npm run app:spec:check && npm run data:access:check && npm run data:prepare:check
+      - name: Validate template release and documentation review
+        env:
+          TEMPLATE_RELEASE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: npm run template:release:check
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build without Databricks runtime variables
+        env:
+          APP_MODE: databricks
+        run: npm run build
+
+  template-consumer-journey:
+    name: Clean template consumer journey
+    needs: check
+    if: needs.check.outputs.template_source == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install journey runner
+        run: npm ci
+      - name: Validate a generated application
+        run: npm run template:journey
+      - name: Validate opt-in migration from 1.5
+        run: npm run template:migration
+
+  genie-e2e:
+    name: AppKit demo journeys
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Validate the AppKit development journeys
+        run: npm run test:e2e
+      - name: Build and validate the production journeys
+        run: npm run build && E2E_PRODUCTION=1 npm run test:e2e
+
+  bundle-compatibility:
+    name: Databricks CLI ${{ matrix.cli_version }}
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        cli_version: ["0.295.0", "1.14.1"]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@6bb7075f85b326f8b9ce160933dfe9bcd63c8121
+        with:
+          version: ${{ matrix.cli_version }}
+      - name: Validate initialized app bundles
+        run: npm run bundle:compatibility

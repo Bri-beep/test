@@ -1,0 +1,122 @@
+{
+  "appkitVersion": "0.76.1",
+  "capabilities": [
+    {
+      "id": "analytics",
+      "label": "KPI, filtres et agrégations SQL",
+      "plugin": "analytics",
+      "stability": "ga",
+      "availability": "integrated",
+      "resources": "Warehouse et tables/vues déclarées dans config/data-access.json ; SELECT uniquement.",
+      "skills": ["databricks-dbsql", "databricks-data-discovery"],
+      "upstreamDoc": "analytics",
+      "guide": "docs/databricks.md",
+      "next": "Déclarer une source avec data:init, puis générer le premier KPI avec feature:new.",
+      "checks": "Paramètres liés, lignes Zod, délais et volumes bornés ; aucune route SQL générique."
+    },
+    {
+      "id": "genie",
+      "label": "Questions en langage naturel sur les données",
+      "plugin": "genie",
+      "stability": "ga",
+      "availability": "integrated",
+      "resources": "Space et alias déclarés dans config/genie-spaces.json ; identité OBO de chaque utilisateur.",
+      "skills": ["databricks-data-discovery"],
+      "upstreamDoc": "genie",
+      "guide": "docs/genie.md",
+      "next": "Cadrer les questions et sources, choisir un Space, préparer ses définitions et questions de référence, puis utiliser le plugin programmatique via le service Valiuz.",
+      "checks": "OBO absent, utilisateurs concurrents, interruption, limites, erreurs sûres, envoi unique et réponses comparées aux KPI validés."
+    },
+    {
+      "id": "personal-state",
+      "label": "Analyses sauvegardées et préférences personnelles",
+      "plugin": null,
+      "stability": "local",
+      "availability": "integrated",
+      "resources": "Deux tables Delta privées déclarées sous personalState ; activation optionnelle.",
+      "skills": [],
+      "upstreamDoc": null,
+      "guide": "docs/user-state.md",
+      "next": "Suivre user-state:init si la persistance est requise ; conserver le repository privé.",
+      "checks": "Isolation par utilisateur, taille et rétention bornées ; aucun résultat analytique persisté."
+    },
+    {
+      "id": "files",
+      "label": "Import, consultation et export de fichiers dans des Volumes UC",
+      "plugin": "files",
+      "stability": "ga",
+      "availability": "optional",
+      "resources": "Volumes Unity Catalog nommés ; opérations de lecture et d’écriture explicitement séparées.",
+      "skills": [],
+      "upstreamDoc": "files",
+      "guide": "docs/appkit-capabilities.md#files",
+      "next": "Définir un contrat de fichier et intégrer uniquement les opérations utiles derrière une API de feature.",
+      "checks": "Chemins hors périmètre, identité, types, tailles, erreurs et autorisation des écritures."
+    },
+    {
+      "id": "serving",
+      "label": "Prédictions, génération ou appel d’un modèle",
+      "plugin": "serving",
+      "stability": "ga",
+      "availability": "optional",
+      "resources": "Endpoint Model Serving nommé et permission CAN_QUERY ; budget d’appels et identité définis.",
+      "skills": ["databricks-model-serving"],
+      "upstreamDoc": "model-serving",
+      "guide": "docs/appkit-capabilities.md#serving",
+      "next": "Choisir un endpoint existant et un contrat d’entrée/sortie ; distinguer prédiction et conversation.",
+      "checks": "Validation des entrées et sorties, timeout, coût borné et interruption si streaming."
+    },
+    {
+      "id": "jobs",
+      "label": "Déclenchement et suivi d’un traitement depuis l’app",
+      "plugin": "jobs",
+      "stability": "ga",
+      "availability": "optional",
+      "resources": "Jobs existants nommés ; paramètres autorisés et droits limités à l’action requise.",
+      "skills": ["databricks-jobs"],
+      "upstreamDoc": "jobs",
+      "guide": "docs/appkit-capabilities.md#jobs",
+      "next": "Distinguer la préparation data du bouton de lancement dans l’app ; réutiliser un Job déclaré.",
+      "checks": "Job non déclaré, paramètres refusés, lancement ambigu sans rejeu et suivi borné."
+    },
+    {
+      "id": "lakebase",
+      "label": "Formulaires et stockage transactionnel métier",
+      "plugin": "lakebase",
+      "stability": "ga",
+      "availability": "optional",
+      "resources": "Projet, branche, base et schema Lakebase dédiés ou réutilisés après décision explicite.",
+      "skills": ["databricks-lakebase"],
+      "upstreamDoc": "lakebase",
+      "guide": "docs/appkit-capabilities.md#lakebase",
+      "next": "Justifier les transactions ou la latence attendue ; les préférences du template restent sur Delta optionnel.",
+      "checks": "Isolation, migrations, concurrence, droits et retour arrière sans suppression de données."
+    },
+    {
+      "id": "ai-search",
+      "label": "Recherche sémantique ou hybride sur un index",
+      "plugin": "ai-search",
+      "stability": "beta",
+      "availability": "optional",
+      "resources": "Index Vector Search déclaré, modèle d’embedding si nécessaire et filtres d’accès explicites.",
+      "skills": ["databricks-vector-search"],
+      "upstreamDoc": "ai-search",
+      "guide": "docs/appkit-capabilities.md#ai-search",
+      "next": "Évaluer le besoin de recherche sémantique ; documenter l’acceptation de la bêta avant intégration.",
+      "checks": "Pertinence, filtrage par identité, limites, pagination et compatibilité de la bêta."
+    },
+    {
+      "id": "agents",
+      "label": "Assistant embarqué qui utilise plusieurs outils",
+      "plugin": "agents",
+      "stability": "beta",
+      "availability": "optional",
+      "resources": "Modèle compatible streaming et liste explicite d’outils, d’identités et de budgets.",
+      "skills": ["databricks-model-serving"],
+      "upstreamDoc": "agents",
+      "guide": "docs/appkit-capabilities.md#agents",
+      "next": "Définir un besoin dépassant Genie ou un appel de modèle ; accepter la bêta avant intégration.",
+      "checks": "Outils refusés, isolation, injection de prompt, interruption, approbations et absence de rejeu des mutations."
+    }
+  ]
+}

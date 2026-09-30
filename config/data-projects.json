@@ -1,0 +1,8 @@
+{
+  "allowed": [
+    "dev-dtm-operating",
+    "dev-dtm-media-pm",
+    "dev-dtm-myvaliuz",
+    "dev-dtm-insight-sharing"
+  ]
+}

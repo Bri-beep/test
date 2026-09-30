@@ -1,0 +1,92 @@
+schemaVersion: 1
+id: 1.2.0-to-1.3.0
+from: 1.2.0
+to: 1.3.0
+summary: Ajoute une bibliothèque de visualisations analytics réutilisables et sa page de démonstration accessible.
+changes:
+  - id: visualization-foundations
+    mode: guided
+    title: Ajouter les fondations visuelles et le thème clair/sombre
+    description: Les tokens sémantiques, le sélecteur de thème, les formats et la carte partagée établissent un socle cohérent.
+    paths:
+      - package.json
+      - package-lock.json
+      - tailwind.config.ts
+      - src/app/globals.css
+      - src/app/layout.tsx
+      - src/app/page.tsx
+      - src/components/app-shell/app-header.tsx
+      - src/components/app-shell/app-shell.tsx
+      - src/components/states/error-state.tsx
+      - src/components/theme/theme-toggle.tsx
+      - src/components/cards/data-card.tsx
+      - src/components/cards/index.ts
+      - src/components/data-visualization/format.ts
+      - src/components/data-visualization/types.ts
+      - src/features/connection-check/connection-check-card.tsx
+    instructions:
+      - Installer les dépendances de visualisation avec npm et conserver les versions exactes du template au lieu de copier package-lock.json.
+      - Fusionner les tokens et le thème avec les styles propres à l'app ; conserver le header clair tant qu'aucun logo officiel pour fond sombre n'est disponible.
+      - Reprendre les formats, types et états génériques sans introduire de KPI, de table ou de configuration Databricks dans src/components.
+  - id: reusable-analytics-visualizations
+    mode: guided
+    title: Ajouter les composants de visualisation analytics réutilisables
+    description: Le contrat public expose cartes KPI, sparklines, jauges, multi-métriques, séries temporelles et carte géographique.
+    paths:
+      - src/components/data-visualization/index.ts
+      - src/components/charts/chart-state.tsx
+      - src/components/charts/index.ts
+      - src/components/charts/sparkline.tsx
+      - src/components/charts/time-series-chart.tsx
+      - src/components/kpi/big-number-kpi.tsx
+      - src/components/kpi/circular-progress.tsx
+      - src/components/kpi/index.ts
+      - src/components/kpi/multi-metric-card.tsx
+      - src/components/kpi/trend-indicator.tsx
+      - src/components/maps/analytics-map.tsx
+      - src/components/maps/index.ts
+      - src/components/maps/map-geometry.ts
+      - src/components/maps/map-ui.tsx
+      - src/components/maps/types.ts
+      - src/components/maps/use-element-width.ts
+      - tests/data-visualizations.test.ts
+    instructions:
+      - Reprendre le point d'entrée public et adapter les imports sans remplacer les composants métier existants.
+      - Conserver les états chargement, vide et erreur, les libellés accessibles, les alternatives tabulaires et le respect de prefers-reduced-motion.
+      - Utiliser les données et formats de l'app depuis sa couche UI ; les composants génériques ne lisent ni environnement serveur ni credential.
+  - id: visualization-demo-route
+    mode: guided
+    title: Ajouter la page de démonstration des visualisations
+    description: La route /visualizations montre chaque composant avec des données synthétiques et sans accès distant.
+    paths:
+      - src/app/visualizations/page.tsx
+      - src/app/visualizations/demo-map-data.ts
+      - src/app/visualizations/visualizations-demo.tsx
+      - src/app/visualizations/demo-data.ts
+      - src/components/app-shell/app-nav.tsx
+    instructions:
+      - Intégrer la route et son lien sans écraser la navigation ou une route métier existante.
+      - Conserver uniquement des données synthétiques dans la démonstration et ne jamais y ajouter de résultat sensible ou d'identifiant client.
+  - id: template-version-1-3
+    mode: guided
+    title: Déclarer l'état du template 1.3.0
+    description: Le manifeste, les guides, les tests et la documentation ciblent la capability de visualisation réutilisable.
+    paths:
+      - template/manifest.yml
+      - template/upgrades/1.2.0-to-1.3.0.yml
+      - tests/template-version.test.ts
+      - README.md
+      - docs/architecture.md
+      - docs/deployment.md
+      - docs/design-system.md
+      - docs/template-upgrades.md
+    instructions:
+      - Exécuter npm run template:check -- --to 1.3.0 avant de modifier l'état d'une app existante.
+      - Passer ensuite .valiuz-template.yml à 1.3.0 et ajouter reusable-analytics-visualizations aux capabilities.
+      - Ajouter 1.2.0-to-1.3.0 à appliedUpgrades dans une app mise à niveau ; une nouvelle app garde appliedUpgrades vide.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 1.3.0
+  - npm run template:release:check -- --base origin/main
+  - npm run app:doctor
+  - npm run check

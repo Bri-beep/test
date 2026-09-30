@@ -1,0 +1,73 @@
+name: Deploy Databricks App
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: Branch, tag or commit to deploy. The resolved commit is pinned in Databricks.
+        required: false
+        default: main
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: databricks-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       vars.DATABRICKS_AUTO_DEPLOY == 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: databricks-production
+    env:
+      APP_NAME: "__APP_NAME__"
+      DATABRICKS_AUTH_TYPE: github-oidc
+      DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ vars.DATABRICKS_CLIENT_ID }}
+    steps:
+      - name: Checkout validated revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.git_ref || github.event.workflow_run.head_sha }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@6bb7075f85b326f8b9ce160933dfe9bcd63c8121
+        with:
+          version: "1.14.1"
+      - name: Reject an uninitialized template
+        run: |
+          PLACEHOLDER='__APP''_NAME__'
+          if rg --fixed-strings "$PLACEHOLDER" app.yaml databricks.yml; then
+            echo 'Run npm run init-app before deploying.' >&2
+            exit 1
+          fi
+      - name: Validate identity
+        run: databricks current-user me
+      - name: Validate and deploy bundle
+        run: npm run deploy -- --target prod
+      - name: Wait for application
+        run: |
+          for attempt in $(seq 1 20); do
+            STATE="$(databricks apps get "$APP_NAME" --output json | jq -r '.app_status.state')"
+            echo "Attempt ${attempt}/20: app state=${STATE}"
+            if [ "$STATE" = "RUNNING" ]; then exit 0; fi
+            sleep 15
+          done
+          echo 'Application did not reach RUNNING state within 5 minutes.' >&2
+          exit 1
+      - name: Verify deployed app and real-data access
+        run: npm run app:smoke -- --app "$APP_NAME"

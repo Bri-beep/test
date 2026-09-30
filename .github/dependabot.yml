@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      appkit:
+        patterns:
+          - "@databricks/appkit"
+          - "@databricks/appkit-ui"
+    open-pull-requests-limit: 5
+    labels: [dependencies]
+# No automatic merge workflow. A maintainer reviews compatibility and migration checks.

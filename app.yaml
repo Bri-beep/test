@@ -1,0 +1,35 @@
+command:
+  - npm
+  - run
+  - start
+env:
+  - name: APP_MODE
+    value: databricks
+  - name: APP_NAME
+    value: "__APP_NAME__"
+  - name: APP_DESCRIPTION
+    value: "__APP_DESCRIPTION__"
+  - name: APP_SUPPORT_NAME
+    value: "__APP_SUPPORT_NAME__"
+  - name: APP_SUPPORT_SLACK_URL
+    value: "__APP_SUPPORT_SLACK_URL__"
+  - name: DATABRICKS_SQL_WAREHOUSE_ID
+    valueFrom: sql-warehouse
+  - name: DATABRICKS_GENIE_SPACE_ID_FRAIM_SALES
+    valueFrom: fraim-sales
+  - name: DATABRICKS_CATALOG
+    value: "__DATABRICKS_CATALOG__"
+  - name: DATABRICKS_SCHEMA
+    value: "__DATABRICKS_SCHEMA__"
+  - name: LOG_LEVEL
+    value: info
+  - name: GENIE_MAX_CONCURRENT_STREAMS
+    value: "8"
+  - name: GENIE_MAX_CONCURRENT_STREAMS_PER_USER
+    value: "2"
+  - name: USER_STATE_ENABLED
+    value: "false"
+  - name: USER_STATE_ORIGIN
+    value: ""
+  - name: USER_STATE_NAMESPACE
+    value: "dev"

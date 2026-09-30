@@ -1,0 +1,23 @@
+bundle:
+  name: "__APP_NAME__-data"
+  databricks_cli_version: ">= 0.295.0"
+
+include:
+  - resources.generated.yml
+
+variables:
+  sql_warehouse_id:
+    default: ab362e9710498a08
+  schedule_pause_status:
+    description: Keep preparation schedules paused until their first successful manual run
+    default: PAUSED
+
+targets:
+  dev:
+    default: true
+    mode: development
+  prod:
+    mode: production
+    workspace:
+      host: https://3070470996474403.3.gcp.databricks.com
+      root_path: "__DATABRICKS_PROD_ROOT_PATH__/data"

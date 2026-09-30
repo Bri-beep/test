@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Calque_1" data-name="Calque 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1780.85 2191.67">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #212222;
+      }
+
+      .cls-1, .cls-2 {
+        fill-rule: evenodd;
+      }
+
+      .cls-2 {
+        fill: url(#gradient-valiuz);
+      }
+    </style>
+    <linearGradient id="gradient-valiuz" x1="3786.99" y1="79.6" x2="4041.97" y2="-361.99" gradientTransform="translate(-2320 1863.67) scale(1 -1)" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f75a55"/>
+      <stop offset=".5" stop-color="#f88033"/>
+      <stop offset="1" stop-color="#f2bb06"/>
+    </linearGradient>
+  </defs>
+  <path class="cls-2" d="M1594.82,1817.67c52.61,0,96.77,18.27,132.47,54.84,35.71,36.55,53.56,80.13,53.56,130.74,0,54.37-17.85,99.37-53.56,134.99-35.69,35.62-79.86,53.43-132.47,53.43s-96.77-17.81-132.47-53.43c-35.71-35.62-53.56-80.61-53.56-134.99,0-50.62,17.85-94.2,53.56-130.74,35.69-36.57,79.86-54.84,132.47-54.84Z"/>
+  <path class="cls-1" d="M1174.97,0h404.34l-692.71,2191.67h-391.81L0,626.19h401.15l291.12,936.15L1174.97,0Z"/>
+</svg>

@@ -1,0 +1,91 @@
+schemaVersion: 1
+id: 1.0.0-to-1.1.0
+from: 1.0.0
+to: 1.1.0
+summary: Aligne une app 1.0.0 sur les corrections de déploiement, les tests consommateurs et le suivi de version.
+changes:
+  - id: databricks-cli-host-output
+    mode: guided
+    title: Accepter le host produit par le Databricks CLI 1.x
+    description: Le préflight accepte la casse actuelle et le préfixe de succès du CLI.
+    paths:
+      - scripts/check-databricks.ts
+      - tests/databricks-preflight.test.ts
+    instructions:
+      - Reprendre parseDatabricksCliHost et ses tests sans modifier les contrôles de workspace.
+  - id: qualified-catalog-identifiers
+    mode: guided
+    title: Délimiter les identifiants Unity Catalog segment par segment
+    description: Les catalogues avec tirets sont back-quotés avant leur liaison à IDENTIFIER(?).
+    paths:
+      - src/lib/databricks/identifiers.ts
+      - src/features/readiness/server/repository.ts
+      - scripts/new-feature.mjs
+      - tests/databricks-identifiers.test.ts
+      - tests/readiness.test.ts
+    instructions:
+      - Reprendre quoteQualifiedIdentifier et l'utiliser avant chaque paramètre d'identifiant qualifié.
+  - id: single-app-resource
+    mode: guided
+    title: Garder une seule définition resources.apps.app
+    description: Le socle de la ressource app et ses bindings sont générés dans un seul fichier compatible avec le CLI 1.x.
+    paths:
+      - databricks.yml
+      - resources/data-access.generated.yml
+      - scripts/data-access.mjs
+    instructions:
+      - Retirer le bloc app de premier niveau dans databricks.yml.
+      - Régénérer resources/data-access.generated.yml avec npm run data:access:render.
+  - id: runtime-safe-build
+    mode: guided
+    title: Séparer la configuration d'affichage de la configuration Databricks runtime
+    description: Le build statique ne valide plus DATABRICKS_HOST avant le démarrage dans Databricks Apps.
+    paths:
+      - src/lib/config/server-config.ts
+      - src/app/layout.tsx
+      - src/app/page.tsx
+      - .github/workflows/ci.yml
+    instructions:
+      - Utiliser parseAppDisplayConfig dans les composants rendus pendant le build.
+      - Conserver getServerConfig dans les chemins serveur qui accèdent à Databricks.
+  - id: bundle-cli-compatibility
+    mode: guided
+    title: Tester les bundles avec les versions de CLI supportées
+    description: La CI valide les targets dev et prod avec les CLI 0.295.0 et 1.14.1 sans workspace réel.
+    paths:
+      - scripts/validate-bundle-cli.ts
+      - tests/bundle-compatibility.test.ts
+      - .github/workflows/ci.yml
+    instructions:
+      - Copier le runner local et la matrice CI, puis vérifier les versions supportées par l'app.
+  - id: clean-consumer-journey
+    mode: guided
+    title: Valider le parcours complet d'une app générée
+    description: Une copie Git propre exécute init-app, le cadrage, la data, une feature, app:doctor et npm run check.
+    paths:
+      - scripts/repository-fixture.ts
+      - scripts/validate-template-journey.ts
+      - tests/template-journey.test.ts
+      - .github/workflows/ci.yml
+    instructions:
+      - Ajouter le job seulement après le contrôle standard pour limiter le coût CI.
+  - id: template-version-tracking
+    mode: guided
+    title: Adopter le manifeste et l'état local du template
+    description: Le manifeste sépare la version du template de celle de l'application et vérifie les capabilities déclarées.
+    paths:
+      - template/manifest.yml
+      - template/upgrades/1.0.0-to-1.1.0.yml
+      - scripts/template-manifest.mjs
+      - scripts/template-status.mjs
+      - .valiuz-template.yml
+    instructions:
+      - Copier l'outillage de version dans l'app 1.0.0.
+      - Créer .valiuz-template.yml avec la version 1.0.0 avant d'appliquer les changements guidés.
+      - Vérifier les capabilities cibles avec npm run template:check -- --to 1.1.0.
+      - Passer ensuite la version et la liste des capabilities de .valiuz-template.yml à 1.1.0.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 1.1.0
+  - npm run app:doctor
+  - npm run check

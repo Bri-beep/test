@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "warehouse": {
+    "binding": "sql-warehouse",
+    "environmentVariable": "DATABRICKS_SQL_WAREHOUSE_ID",
+    "appkitEnvironmentVariable": "DATABRICKS_WAREHOUSE_ID",
+    "permission": "CAN_USE"
+  },
+  "project": "__DATABRICKS_CATALOG__",
+  "sources": [],
+  "personalState": [],
+  "genie": [
+    {
+      "key": "fraim-sales",
+      "aliases": [
+        "fraim-sales",
+        "sales"
+      ],
+      "environmentVariable": "DATABRICKS_GENIE_SPACE_ID_FRAIM_SALES",
+      "permission": "CAN_RUN"
+    }
+  ]
+}

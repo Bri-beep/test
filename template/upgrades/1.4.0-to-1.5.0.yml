@@ -1,0 +1,76 @@
+schemaVersion: 1
+id: 1.4.0-to-1.5.0
+from: 1.4.0
+to: 1.5.0
+summary: Ajoute les analyses et préférences personnelles sur deux tables Delta optionnelles dans le datamart de développement.
+changes:
+  - id: personal-state-feature
+    mode: guided
+    title: Ajouter les contrats, services, API et composants personnels
+    description: Le serveur isole les définitions par app, environnement et identité proxy, sans conserver de résultats SQL.
+    paths:
+      - src/features/user-state
+      - src/app/api/saved-analyses
+      - src/app/api/user-preferences
+      - src/app/saved-analyses
+      - src/app/layout.tsx
+      - src/components/app-shell/app-shell.tsx
+      - src/components/app-shell/app-nav.tsx
+      - src/lib/errors/app-error.ts
+      - tests/user-state.test.ts
+    instructions:
+      - Fusionner les composants avec la navigation et les styles existants ; conserver les adaptations métier.
+      - Déclarer une variante de définition stricte et versionnée par vue ; adapter analysisHref et les préférences.
+      - Composer SaveAnalysisButton avec les filtres appliqués, sans résultats, SQL ou données Genie OBO.
+      - Conserver le layout dynamique pour lire le flag runtime après le build CI.
+      - Vérifier que le compromis du dernier horodatage serveur convient à l’application ; ce stockage ne fournit pas de CAS.
+  - id: personal-state-datamart
+    mode: guided
+    title: Déclarer le stockage de développement et ses droits limités
+    description: Un générateur local prépare deux tables Delta et les bindings MODIFY incluant SELECT, sans exécution distante.
+    paths:
+      - scripts/init-user-state.mjs
+      - scripts/data-access.mjs
+      - scripts/deploy.mjs
+      - src/lib/config/data-access.ts
+      - package.json
+      - app.yaml
+      - .env.example
+      - tests/user-state-setup.test.ts
+      - scripts/validate-bundle-cli.ts
+      - scripts/validate-template-journey.ts
+      - tests/bundle-compatibility.test.ts
+    instructions:
+      - Ajouter user-state:init aux scripts npm et les variables USER_STATE dans les manifests ; garder le flag désactivé.
+      - Si l’état personnel reste inutilisé, conserver USER_STATE_ENABLED=false sans lancer user-state:init ni déclarer de table personnelle.
+      - Pour une activation demandée seulement, lancer npm run user-state:init -- --schema my_app_user_state dans l’app déjà initialisée.
+      - Avant cette activation, examiner config/data-access.json, le DDL et les bindings ; conserver SELECT pour les sources analytiques.
+      - Faire créer les tables seulement après autorisation et revue de la cible, puis valider identité proxy, écritures et isolation avant activation.
+      - Étendre les fixtures de parcours et de bundle aux deux tables ; ces validations restent locales.
+      - Ne pas migrer automatiquement les tables CAS d’une app IKEA existante.
+  - id: template-version-1-5
+    mode: guided
+    title: Déclarer la capability personnelle du template 1.5.0
+    description: Le manifeste, le guide et la documentation décrivent le contrat et ses limites.
+    paths:
+      - template/manifest.yml
+      - template/upgrades/1.4.0-to-1.5.0.yml
+      - tests/template-version.test.ts
+      - README.md
+      - AGENTS.md
+      - docs/user-state.md
+      - docs/architecture.md
+      - docs/databricks.md
+      - docs/deployment.md
+      - docs/local-development.md
+      - docs/template-upgrades.md
+    instructions:
+      - Exécuter npm run template:check -- --to 1.5.0 avant de modifier l’état de l’application.
+      - Remplacer version 1.4.0 par version 1.5.0 dans .valiuz-template.yml.
+      - Ajouter personal-user-state aux capabilities et 1.4.0-to-1.5.0 à appliedUpgrades.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 1.5.0
+  - npm run template:release:check -- --base origin/main
+  - npm run app:doctor
+  - npm run check

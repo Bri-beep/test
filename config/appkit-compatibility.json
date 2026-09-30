@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-09-24",
+  "packages": {
+    "@databricks/appkit": "0.76.1",
+    "@databricks/appkit-ui": "0.76.1"
+  },
+  "node": "22.16.0",
+  "databricksCli": [
+    "0.295.0",
+    "1.12.1",
+    "1.14.1"
+  ],
+  "skills": {
+    "repository": "databricks/databricks-agent-skills",
+    "release": "0.2.10",
+    "reviewedRevision": "3d79814688e28765db0153eddcf6ec74972c75b4",
+    "names": [
+      "databricks-core",
+      "databricks-apps",
+      "databricks-dabs",
+      "databricks-dbsql",
+      "databricks-app-design",
+      "databricks-data-discovery"
+    ],
+    "entrypointSha256": {
+      "databricks-core": "dd526c86abe8c1139dedb40d0fc1c243630b3ceee305d9f0c35b5d8dac42432f",
+      "databricks-apps": "b49a630bb7f7b982ea0cbf17f6f043986968962582ac0e0a872ebc57ad155d4b",
+      "databricks-dabs": "3ae2cf35e8c8840f888c9e95553e20bd270ab234129fc531fc164e58c1608722",
+      "databricks-dbsql": "7d58a08aac3ec601478332de9eb2d3146ab64ac0e1007b97cacaf29229ac4c6a",
+      "databricks-app-design": "c41195b58a80939770fd289fb4b054283ae22af25d3984d504dea55c9b962f49",
+      "databricks-data-discovery": "aacfb494283d201c72e881463dda2e14f047a9bded5591ad9f4e5cdd958263bf"
+    }
+  },
+  "templates": {
+    "repository": "databricks/appkit",
+    "reviewedRevision": "9c687aaffd4feca49dcbe22e720ce05e611773e6",
+    "paths": [
+      "template",
+      "packages/appkit/src/plugins",
+      "packages/appkit-ui"
+    ]
+  },
+  "exceptions": [
+    {
+      "id": "genie-transport",
+      "implementation": "src/features/genie/server/appkit-client.ts",
+      "reason": "AppKit Genie 0.76.1 orchestrates the conversation through sendMessage. A request-scoped client retains single POST, abortable HTTP, bounded read retries, safe errors and exact result types; upstream omits signals on those calls and logs raw SDK errors. Attachments without statement IDs retain their read path.",
+      "removeWhen": "Programmatic Genie with its default client proves mandatory OBO, cancellation on every call, no submission replay, safe logs, bounded reads, all attachments and the 500-row contract. Replace the compatibility client only after these tests pass."
+    },
+    {
+      "id": "driver-semantics",
+      "implementation": "src/lib/databricks/sql.ts",
+      "reason": "Private personal-state writes, null bindings, native scalar types, explicit driver transport and standalone CLI diagnostics retain @databricks/sql. AppKit leaves JSON_ARRAY scalar values as strings and parses JSON-looking STRING cells.",
+      "removeWhen": "AppKit preserves bound nulls, native scalar types, exact STRING values, private write semantics and diagnostic authentication."
+    },
+    {
+      "id": "startup-demo",
+      "implementation": "src/server/workspace-client.ts",
+      "reason": "AppKit resolves workspace identity even with only its server plugin. Demo injects a fail-closed client with two synthetic metadata responses.",
+      "removeWhen": "Upstream server-only startup supports offline mode without identity resolution."
+    },
+    {
+      "id": "cli-profile",
+      "implementation": "src/server/workspace-client.ts",
+      "reason": "0.76.1 ignores profile when host is also passed. Local OAuth uses the existing named CLI token provider for each operation.",
+      "removeWhen": "Upstream supports named CLI U2M credentials, host verification and token refresh together."
+    },
+    {
+      "id": "empty-json-result",
+      "implementation": "src/server/workspace-client.ts",
+      "reason": "Statement Execution can return result {} after a successful zero-row JSON_ARRAY query. The client supplies data_array [] only when the non-truncated manifest proves zero rows and zero chunks with a column schema. Unknown or incomplete results remain errors; no resubmission occurs.",
+      "removeWhen": "AppKit returns data [] for an empty result proven by the statement manifest, while still rejecting incomplete and truncated responses."
+    }
+  ]
+}

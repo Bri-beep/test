@@ -1,0 +1,35 @@
+schemaVersion: 1
+id: 2.0.0-to-2.0.1
+from: 2.0.0
+to: 2.0.1
+summary: Reconnaître les résultats SQL JSON vides confirmés sans masquer les réponses incomplètes.
+changes:
+  - id: confirmed-empty-sql-results
+    mode: guided
+    title: Normaliser le résultat vide avant sa lecture par AppKit
+    description: Statement Execution peut omettre data_array après un SELECT réussi sans ligne ; AppKit 0.76.1 ne fournit alors pas le tableau attendu par l’executor.
+    paths:
+      - src/server/workspace-client.ts
+      - tests/fixtures/appkit-contract.ts
+      - config/appkit-compatibility.json
+      - docs/appkit-maintenance.md
+      - template/manifest.yml
+      - template/upgrades/2.0.0-to-2.0.1.yml
+    instructions:
+      - Fusionner le correctif dans guardStatementClient en conservant les adaptations locales du client et de l’authentification.
+      - Fournir data_array vide seulement après SUCCEEDED avec format JSON_ARRAY, un schéma de colonnes non vide, zéro ligne et zéro chunk déclarés, sans troncature ni données ou chunk suivant.
+      - Conserver le refus des réponses incomplètes dans AppKitSqlExecutor et la neutralisation des erreurs avant les logs AppKit.
+      - Ne modifier aucune requête, validation Zod, limite, délai, source ou écriture personnelle ; ne pas ajouter de nouvelle soumission ou de fallback après exécution.
+      - Reporter le test de régression avec le package AppKit installé et vérifier résultat vide, résultat incomplet, erreurs, troncature et soumission unique.
+      - Ajouter l’exception empty-json-result au registre de compatibilité et documenter son critère de retrait.
+      - Fusionner le manifeste et ce guide sans modifier les définitions des versions historiques ; aucune dépendance ni capability nouvelle n’est requise.
+      - Après validation, déclarer 2.0.1 dans .valiuz-template.yml, conserver les capabilities de 2.0.0 et ajouter 2.0.0-to-2.0.1 à appliedUpgrades ; relancer app:doctor et check.
+      - Après un déploiement autorisé, vérifier /api/readiness et une vue métier sans données ; aucune écriture SQL ni modification de droits n’est nécessaire.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 2.0.1
+  - npm run template:release:check -- --base origin/main
+  - npm run app:doctor
+  - npm run check
+  - npm run test:e2e
+  - npm run bundle:compatibility

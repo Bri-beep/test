@@ -1,0 +1,113 @@
+schemaVersion: 1
+id: 1.3.0-to-1.4.0
+from: 1.3.0
+to: 1.4.0
+summary: Ajoute une intégration Genie conversationnelle qui utilise l’identité Databricks de chaque utilisateur.
+changes:
+  - id: genie-server-integration
+    mode: guided
+    title: Ajouter le service Genie et le flux SSE
+    description: La route Next.js transmet chaque demande à Genie avec le jeton utilisateur fourni par Databricks Apps.
+    paths:
+      - package.json
+      - package-lock.json
+      - src/lib/http/with-api-route.ts
+      - src/lib/errors/app-error.ts
+      - src/lib/logging/logger.ts
+      - src/features/genie/contract.ts
+      - src/features/genie/context.ts
+      - src/features/genie/demo-fixtures.ts
+      - src/features/genie/server
+      - src/app/api/genie/[alias]/messages/route.ts
+      - tests/genie-server.test.ts
+      - tests/fixtures/genie-client-contract.ts
+      - tests/http.test.ts
+    instructions:
+      - Installer les dépendances avec npm. Ne pas remplacer le fichier package-lock.json d’une application existante.
+      - Ajouter les contrats partagés et le service serveur. Conserver le jeton OBO dans la portée de la requête.
+      - Fusionner l’extension de withApiRoute. Conserver l’enveloppe JSON existante avant le début d’un flux SSE.
+      - Ne pas écrire les questions, le SQL, les lignes de résultat ou les en-têtes d’autorisation dans les logs.
+  - id: genie-chat-experience
+    mode: guided
+    title: Ajouter le chat, les résultats riches et la démonstration
+    description: Le composant montre le suivi, le Markdown, les tables, les graphiques, le SQL et les actions d’épinglage.
+    paths:
+      - src/features/genie/genie-chat.tsx
+      - src/features/genie/use-genie-conversation.ts
+      - src/features/genie/genie-result-renderer.tsx
+      - src/features/genie/genie-result-table.tsx
+      - src/features/genie/genie-markdown.tsx
+      - src/features/genie/genie-icons.tsx
+      - src/features/genie/pinning.ts
+      - src/features/genie/index.ts
+      - src/app/genie/page.tsx
+      - src/app/genie/genie-demo.tsx
+      - src/components/app-shell/app-header.tsx
+      - src/components/app-shell/app-nav.tsx
+      - tsconfig.json
+      - playwright.config.ts
+      - e2e/specs/genie-chat.md
+      - e2e/genie-chat.spec.ts
+      - tests/brand-shell.test.ts
+      - tests/genie-ui.test.ts
+      - .github/workflows/ci.yml
+    instructions:
+      - Fusionner le composant avec les tokens et les composants de visualisation de l’application.
+      - Conserver les libellés accessibles, le focus visible, le thème sombre et le mode de mouvement réduit.
+      - Brancher onPin et onSave sur le système de composition de l’application. Ne pas partager un instantané de données OBO.
+      - Adapter la route de démonstration et la navigation sans remplacer une page métier existante.
+  - id: genie-space-and-user-scope
+    mode: guided
+    title: Déclarer le Space Genie et le scope utilisateur
+    description: Le bundle lie chaque alias à un Space précis avec CAN_RUN et demande uniquement le scope genie.
+    paths:
+      - config/genie-spaces.json
+      - app.yaml
+      - .env.example
+      - scripts/data-access.mjs
+      - resources/data-access.generated.yml
+      - scripts/deploy.mjs
+      - scripts/repository-fixture.ts
+      - scripts/validate-bundle-cli.ts
+      - scripts/validate-template-journey.ts
+      - tests/app-doctor.test.ts
+      - tests/bundle-compatibility.test.ts
+      - tests/data-access.test.ts
+      - tests/data-preparation.test.ts
+      - tests/init-app.test.ts
+      - tests/deploy.test.ts
+      - tests/logging.test.ts
+      - tests/preview-real.test.ts
+    instructions:
+      - Remplacer les Space ID et les alias par les valeurs de l’application.
+      - Exécuter npm run data:access:render. Examiner ensuite le scope genie et chaque binding CAN_RUN généré.
+      - Conserver un seul resources.apps.app dans le bundle. Ne pas ajouter une deuxième ressource application.
+      - Configurer le consentement OBO et les droits Unity Catalog dans le workspace avant le déploiement.
+  - id: template-version-1-4
+    mode: guided
+    title: Déclarer l’état du template 1.4.0
+    description: Le manifeste, le guide, les tests et la documentation décrivent la capability Genie.
+    paths:
+      - template/manifest.yml
+      - template/upgrades/1.3.0-to-1.4.0.yml
+      - tests/template-version.test.ts
+      - README.md
+      - docs/architecture.md
+      - docs/databricks.md
+      - docs/deployment.md
+      - docs/local-development.md
+      - docs/design-system.md
+      - docs/template-upgrades.md
+    instructions:
+      - Exécuter npm run template:check -- --to 1.4.0 avant de modifier l’état de l’application.
+      - Remplacer version 1.3.0 par version 1.4.0 dans .valiuz-template.yml.
+      - Ajouter genie-natural-language-analytics aux capabilities.
+      - Ajouter 1.3.0-to-1.4.0 à appliedUpgrades.
+      - Conserver les adaptations du dashboard et les Space ID propres à l’application.
+validation:
+  - npm run template:status
+  - npm run template:check -- --to 1.4.0
+  - npm run template:release:check -- --base origin/main
+  - npm run app:doctor
+  - npm run test:e2e
+  - npm run check

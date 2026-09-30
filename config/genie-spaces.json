@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "spaces": [
+    {
+      "key": "fraim-sales",
+      "displayName": "Genie - FRAIM - Sales Performance",
+      "aliases": [
+        "fraim-sales",
+        "sales"
+      ],
+      "environmentVariable": "DATABRICKS_GENIE_SPACE_ID_FRAIM_SALES",
+      "spaceId": "01f1706a44af166db267134b70dc27c8"
+    }
+  ]
+}
